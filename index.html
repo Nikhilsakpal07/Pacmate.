@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packing Assistant - PacMate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #ffffff;
+        }
+
+        header {
+            background: #1e1e2f;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #ffffff;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(30, 30, 47, 0.8);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #ffddff;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin: 0;
+            color: #ccccff;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: rgba(30, 30, 47, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #ffddff;
+        }
+
+        input, select {
+            padding: 12px;
+            margin-top: 8px;
+            border: 2px solid #ffffff;
+            border-radius: 8px;
+            background: #2d2d44;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        input::placeholder {
+            color: #b3b3cc;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #6a11cb;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 15px;
+            border: none;
+            background: #6a11cb;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2575fc;
+        }
+
+        .suggestions {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .suggestions h2 {
+            font-size: 1.8rem;
+            color: #ffddff;
+            margin-bottom: 20px;
+        }
+
+        .suggestions .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .suggestions .card {
+            background: #6a11cb;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .suggestions .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .suggestions .card img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .suggestions .card p {
+            margin: 0;
+            font-size: 1rem;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PacMate</h1>
+    </header>
+
+    <div class="hero">
+        <h2>Your Ultimate Packing Assistant</h2>
+        <p>Plan smarter, pack lighter, and enjoy your journey!</p>
+    </div>
+
+    <main>
+        <form id="packingForm">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" placeholder="Enter your destination" required>
+
+            <label for="activities">Planned Activities:</label>
+            <input type="text" id="activities" name="activities" placeholder="E.g., hiking, swimming" required>
+
+            <button type="submit">Get Suggestions</button>
+        </form>
+
+        <div class="suggestions" id="suggestions">
+            <!-- Packing suggestions will appear here -->
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('packingForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const location = document.getElementById('location').value;
+            const activity = document.getElementById('activities').value;
+
+            const response = await fetch('/getPackingSuggestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ location, activity }),
+            });
+
+            const data = await response.json();
+
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = ''; // Clear previous suggestions
+
+            if (data.suggestions) {
+                const title = document.createElement('h2');
+                title.textContent = 'Packing Suggestions';
+                suggestionsDiv.appendChild(title);
+
+                const cardContainer = document.createElement('div');
+                cardContainer.classList.add('card-container');
+
+                data.suggestions.forEach(suggestion => {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+
+                    const icon = document.createElement('img');
+                    icon.src = 'https://via.placeholder.com/50'; // Replace with a relevant icon URL
+                    icon.alt = 'Icon';
+
+                    const text = document.createElement('p');
+                    text.textContent = suggestion;
+
+                    card.appendChild(icon);
+                    card.appendChild(text);
+                    cardContainer.appendChild(card);
+                });
+
+                suggestionsDiv.appendChild(cardContainer);
+            } else {
+                suggestionsDiv.textContent = data.error || 'Something went wrong!';
+            }
+        });
+    </script>
+</body>
+</html>
